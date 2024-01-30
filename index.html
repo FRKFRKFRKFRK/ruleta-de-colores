@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ruleta de Colores</title>
+  <style>
+    body {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+      background-color: #f0f0f0;
+    }
+
+    #ruleta {
+      width: 200px;
+      height: 200px;
+      border-radius: 50%;
+      background: conic-gradient(
+        #ff0000 0% 60deg,
+        #ffa500 60deg 120deg,
+        #ffff00 120deg 180deg,
+        #008000 180deg 240deg,
+        #0000ff 240deg 300deg,
+        #800080 300deg 360deg
+      );
+      transition: transform 5s ease-in-out;
+    }
+
+    #audio {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div id="ruleta" onclick="girarRuleta()"></div>
+  <audio id="audio" src="ruta-del-sonido.mp3" preload="auto"></audio>
+
+  <script>
+    function girarRuleta() {
+      const ruleta = document.getElementById('ruleta');
+      const audio = document.getElementById('audio');
+
+      // Evitar múltiples clics mientras la ruleta gira
+      ruleta.onclick = null;
+
+      // Reproducir el sonido de la ruleta
+      audio.play();
+
+      // Girar la ruleta
+      ruleta.style.transform = 'rotate(720deg)';  // 720 grados para dos vueltas completas
+
+      // Detener la ruleta después de 5 segundos
+      setTimeout(() => {
+        // Detener el sonido
+        audio.pause();
+        audio.currentTime = 0;
+
+        // Restaurar el evento de clic
+        ruleta.onclick = girarRuleta;
+
+        // Calcular la rotación actual
+        const transformValue = window.getComputedStyle(ruleta).getPropertyValue('transform');
+        const matrix = new DOMMatrixReadOnly(transformValue);
+        const currentRotation = Math.round((Math.atan2(matrix.b, matrix.a) * (180 / Math.PI) + 360) % 360);
+
+        // Calcular la rotación final para detenerse lentamente
+        const finalRotation = Math.ceil(currentRotation / 60) * 60;
+
+        // Aplicar la rotación final
+        ruleta.style.transition = 'transform 2s ease-in-out';
+        ruleta.style.transform = `rotate(${finalRotation}deg)`;
+
+        // Restaurar la transición después de la detención
+        setTimeout(() => {
+          ruleta.style.transition = 'transform 0.5s ease-in-out';
+        }, 2000);
+      }, 5000);
+    }
+  </script>
+</body>
+</html>
